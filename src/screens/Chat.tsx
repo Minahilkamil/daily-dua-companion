@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 import { Message, Dua, Theme } from '../types';
 import { supabase, addFavorite, removeFavorite } from '../services/supabase';
-import { generateAIResponse } from '../services/ai';
+import { generateAIResponse, UserFacingError } from '../services/ai';
 import { getColors } from '../constants/colors';
 import { duas } from '../data/duas';
 import { extractDuaFromMessage } from '../data/duas';
@@ -36,6 +37,7 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const colors = getColors(theme);
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
 
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -81,10 +83,11 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
       alignItems: 'flex-start',
     },
     messageBubble: {
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      borderRadius: 18,
-    },
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 18,
+          flexShrink: 1,
+        },
     userMessage: {
       borderBottomRightRadius: 4,
     },
@@ -97,9 +100,10 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
       borderWidth: 1,
     },
     messageText: {
-      fontSize: 15.5,
-      lineHeight: 22,
-    },
+          fontSize: 15.5,
+          lineHeight: 22,
+          flexShrink: 1,
+        },
     userMessageText: {
       color: '#fff',
     },
@@ -110,6 +114,7 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
       fontSize: 11,
       marginTop: 4,
       marginHorizontal: 4,
+      color: colors.mutedText,
     },
     timestampUser: {
       textAlign: 'right',
@@ -167,6 +172,12 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (isFocused && userId) {
+      fetchFavorites(userId);
+    }
+  }, [isFocused, userId]);
 
   async function checkUser() {
     const {
@@ -309,7 +320,7 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
           item.role === 'user' ? styles.messageRowUser : styles.messageRowAssistant,
         ]}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+               <View style={{ flexDirection: 'row', alignItems: 'flex-start', flexShrink: 1 }}>
           <View
             style={[
               styles.messageBubble,

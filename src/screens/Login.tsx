@@ -1,11 +1,10 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
@@ -13,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, Theme } from '../types';
 import { supabase } from '../services/supabase';
 import { getColors } from '../constants/colors';
+import { notify } from '../utils/notify';
 
 type Props = {
   navigation: NavigationProp;
@@ -29,7 +29,7 @@ export default function LoginScreen({ navigation, theme, toggleTheme }: Props) {
 
   async function handleLogin() {
     if (!email || !password) {
-      Alert.alert('Please enter both email and password');
+      notify('Please enter both email and password');
       return;
     }
 
@@ -44,7 +44,7 @@ export default function LoginScreen({ navigation, theme, toggleTheme }: Props) {
         throw error;
       }
     } catch (error: any) {
-      Alert.alert('Login failed', error.message);
+      notify('Login failed', error.message);
     } finally {
       setLoading(false);
     }

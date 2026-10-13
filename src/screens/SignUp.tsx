@@ -1,11 +1,10 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
@@ -13,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, Theme } from '../types';
 import { supabase } from '../services/supabase';
 import { getColors } from '../constants/colors';
+import { notify } from '../utils/notify';
 
 type Props = {
   navigation: NavigationProp;
@@ -29,13 +29,13 @@ export default function SignUpScreen({ navigation, theme, toggleTheme }: Props) 
 
   async function handleSignUp() {
     if (!email || !password) {
-      Alert.alert('Please enter both email and password');
+      notify('Please enter both email and password');
       return;
     }
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -44,10 +44,17 @@ export default function SignUpScreen({ navigation, theme, toggleTheme }: Props) 
         throw error;
       }
 
-      Alert.alert('Account created successfully');
-      navigation.navigate('Login');
+      // If email confirmation is on, there is no session yet.
+      if (!data.session) {
+        notify(
+          'Check your email',
+          'We sent you a confirmation link. Confirm your email, then sign in.'
+        );
+        navigation.navigate('Login');
+      }
+      // If a session exists, the app switches to the main screens by itself.
     } catch (error: any) {
-      Alert.alert('Sign up failed', error.message);
+      notify('Sign up failed', error.message);
     } finally {
       setLoading(false);
     }

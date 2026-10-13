@@ -4,10 +4,19 @@ import { findMatchingDua } from '../data/duas';
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
+// Errors whose message is safe to show to the user.
+export class UserFacingError extends Error {}
+
 export async function generateAIResponse(userMessage: string): Promise<string> {
   try {
-    const matchedDua = findMatchingDua(userMessage);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      throw new UserFacingError('Your session has expired. Please log in again.');
+    }
 
+    const matchedDua = findMatchingDua(userMessage);
     const body: any = { message: userMessage };
 
     if (matchedDua) {
@@ -24,12 +33,18 @@ export async function generateAIResponse(userMessage: string): Promise<string> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        apikey: SUPABASE_ANON_KEY,
+        // The logged-in user's token, not the public anon key.
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
+    if (response.status === 401) {
+      throw new UserFacingError('Your session has expired. Please log in again.');
+    }
+    // 429 (rate limit) still returns a friendly message in the body.
+    if (!response.ok && response.status !== 429) {
       throw new Error(`API request failed with status ${response.status}`);
     }
 
@@ -37,6 +52,9 @@ export async function generateAIResponse(userMessage: string): Promise<string> {
     return data.choices[0].message.content.trim();
   } catch (error) {
     console.error('Error generating AI response:', error);
-    throw new Error('Failed to generate response');
+    if (error instanceof UserFacingError) throw error;
+    throw new UserFacingError(
+      "Sorry, I couldn't get a response right now. Please try again in a moment."
+    );
   }
 }

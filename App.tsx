@@ -12,6 +12,7 @@ import {
   Animated,
   Dimensions,
   Alert,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
@@ -86,17 +87,22 @@ function Sidebar({
       ]).start(() => setModalVisible(false));
     }
   }, [visible]);
+   const doLogout = async () => {
+    onClose();
+    await supabase.auth.signOut();
+  };
+
   const handleLogout = () => {
+    // Alert.alert does nothing on web, so use the browser dialog there.
+    if (Platform.OS === "web") {
+      if (window.confirm("Are you sure you want to logout?")) {
+        doLogout();
+      }
+      return;
+    }
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          onClose();
-          await supabase.auth.signOut();
-        },
-      },
+      { text: "Logout", style: "destructive", onPress: doLogout },
     ]);
   };
   const menuItems = [
@@ -339,30 +345,30 @@ export default function App() {
   };
 
   useEffect(() => {
+    let subscription: { unsubscribe: () => void } | undefined;
+
     async function init() {
       const savedTheme = await getTheme();
       setThemeState(savedTheme);
 
-      supabase.auth
-        .getSession()
-        .then(({ data: { session } }) => {
-          setSession(session);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.log("Session error:", err);
-          setLoading(false);
-        });
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (err) {
+        console.log("Session error:", err);
+      }
+      setLoading(false);
 
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session);
       });
-
-      return () => subscription.unsubscribe();
+      subscription = data.subscription;
     }
+
     init();
+    return () => subscription?.unsubscribe();
   }, []);
 
   useEffect(() => {

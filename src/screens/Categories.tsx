@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { Dua, Theme } from "../types";
 import { duas } from "../data/duas";
 import { getColors } from "../constants/colors";
@@ -26,6 +27,7 @@ export default function CategoriesScreen({ theme }: { theme: Theme }) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const colors = getColors(theme);
+  const isFocused = useIsFocused();
 
   // Group duas by category
   const categorizedDuas = useMemo(() => {
@@ -45,13 +47,13 @@ export default function CategoriesScreen({ theme }: { theme: Theme }) {
   );
 
   useEffect(() => {
-    async function init() {
+    if (!isFocused) return;
+    async function load() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        // Load favorites
         const { data } = await supabase
           .from("favorites")
           .select("dua_id")
@@ -62,8 +64,8 @@ export default function CategoriesScreen({ theme }: { theme: Theme }) {
       }
       setLoading(false);
     }
-    init();
-  }, []);
+    load();
+  }, [isFocused]);
 
   const toggleFavorite = async (duaId: string) => {
     if (!userId) return;
