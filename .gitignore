@@ -54,8 +54,18 @@ ios/fastlane/test_output
 
 # Expo
 .expo/
+.expo-cache/
 dist/
 web-build/
+
+# Supabase CLI temp files
+supabase/.temp/
+
+# IDE
+.vscode/
+
+# OS/sandbox artifacts
+AppData/
 
 # Environment variables
 .env
