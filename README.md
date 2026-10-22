@@ -134,13 +134,13 @@ daily-dua-companion/
 
 ### Key Files Explained
 
-| File                                                                                   | Purpose                                                                                                                |
-| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [duas.ts](file:///g:/app/src/data/duas.ts)                                             | Single source of truth for verified duas. Also exports `findMatchingDua()` and `extractDuaFromMessage()` helpers.      |
-| [ai.ts](file:///g:/app/src/services/ai.ts)                                             | Matches user query → local dua → forwards matched dua to Supabase Edge Function so LLM never hallucinates Arabic text. |
-| [chat-completion/index.ts](file:///g:/app/supabase/functions/chat-completion/index.ts) | Serverless function that talks to Gemini API, with a strict safety system prompt to prevent invented dua text.         |
-| [supabase.ts](file:///g:/app/src/services/supabase.ts)                                 | Reusable Supabase client, plus typed helpers for theme storage and favorite CRUD (RLS-protected).                      |
-| [colors.ts](file:///g:/app/src/constants/colors.ts)                                    | Centralized, themed color palette exported through `getColors(theme)`.                                                 |
+| File                                                                      | Purpose                                                                                                                |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [duas.ts](./src/data/duas.ts)                                             | Single source of truth for verified duas. Also exports `findMatchingDua()` and `extractDuaFromMessage()` helpers.      |
+| [ai.ts](./src/services/ai.ts)                                             | Matches user query → local dua → forwards matched dua to Supabase Edge Function so LLM never hallucinates Arabic text. |
+| [chat-completion/index.ts](./supabase/functions/chat-completion/index.ts) | Serverless function that talks to Gemini API, with a strict safety system prompt to prevent invented dua text.         |
+| [supabase.ts](./src/services/supabase.ts)                                 | Reusable Supabase client, plus typed helpers for theme storage and favorite CRUD (RLS-protected).                      |
+| [colors.ts](./src/constants/colors.ts)                                    | Centralized, themed color palette exported through `getColors(theme)`.                                                 |
 
 ---
 
@@ -204,7 +204,7 @@ CREATE POLICY "Users can delete their own favorites"
 
 Run this in your Supabase Dashboard → **SQL Editor** → **New Query** → paste → **Run**.
 
-You also need a `messages` table for chat history (same RLS pattern — `user_id REFERENCES auth.users(id)`, plus `role`, `content`, `created_at` columns). Create that if not already present.
+Additional migrations (for the `messages` and `chat_requests` tables) live in [`supabase/migrations/`](./supabase/migrations). Apply them with `supabase db push`.
 
 #### 2. Deploy the Edge Function
 
@@ -246,16 +246,12 @@ Copy `.env.example` to `.env` and fill in the values:
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-EXPO_PUBLIC_LLM_API_KEY=                      # (Optional — not used in current Gemini impl)
-EXPO_PUBLIC_LLM_ENDPOINT=https://api.openai.com/v1/chat/completions
 ```
 
 | Variable                        | Required | Description                                           |
 | ------------------------------- | -------- | ----------------------------------------------------- |
 | `EXPO_PUBLIC_SUPABASE_URL`      | ✅       | Project URL from Supabase Dashboard → Settings → API  |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | ✅       | `anon` public key (safe to ship with the app)         |
-| `EXPO_PUBLIC_LLM_API_KEY`       | ❌       | Reserved for future OpenAI-compatible endpoint switch |
-| `EXPO_PUBLIC_LLM_ENDPOINT`      | ❌       | Reserved for future OpenAI-compatible endpoint switch |
 
 > ⚠️ **Security note**: The `GEMINI_API_KEY` is a _server-side secret_. Set it via `supabase secrets set`, **never** in `.env` or client code.
 
