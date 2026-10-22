@@ -41,7 +41,7 @@
 
 - **🤖 AI Dua Assistant**: Chat-style interface that understands natural language queries (English + Roman Urdu/Hindi) and provides contextually relevant, verified duas.
 - **📚 Dua Categories**: Browse duas organized by daily situations (sleep, travel, meals, distress, etc.) — expand any category to read the full dua in Arabic, transliteration, and dual-language translation.
-- **❤️ Favorites Bookmarks**: Save your most-used duas with a single tap. Access them instantly even when offline.
+- **❤️ Favorites Bookmarks**: Save your most-used duas with a single tap.
 - **🌗 Light & Dark Mode**: Switch between elegant light and dark themes. Preference is saved locally per device.
 - **🔐 Secure Authentication**: Email/password sign-up and login powered by Supabase Auth, complete with session persistence.
 - **☁️ Cross-device Sync**: Chat history and favorites are stored in Supabase, so they follow you across devices.
@@ -52,7 +52,7 @@
 - **Custom Sidebar Navigation**: Hamburger-style menu for clean, minimal screen real estate.
 - **Beautiful Typography**: Serif fonts and a warm, Islamic-inspired palette of cream, forest green, and gold.
 - **Typing Indicator**: Visual feedback while the AI generates a response.
-- **Offline-Capable UI**: AsyncStorage for theme + session persistence.
+- **Theme preference persists locally**: AsyncStorage for theme + session persistence.
 
 ---
 
@@ -86,7 +86,6 @@
 
 ```
 daily-dua-companion/
-├── .env                         # Local env vars (gitignored)
 ├── .env.example                 # Example env template
 ├── .gitignore
 ├── app.json                     # Expo app config
@@ -129,7 +128,9 @@ daily-dua-companion/
     │   └── chat-completion/
     │       └── index.ts         # Edge Function: LLM proxy + system prompt
     └── migrations/
-        └── 001_create_favorites_table.sql
+        ├── 001_create_favorites_table.sql
+        ├── 002_create_messages_table.sql
+        └── 003_create_chat_requests_table.sql
 ```
 
 ### Key Files Explained
