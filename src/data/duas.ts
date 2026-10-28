@@ -1,13 +1,4 @@
-export type Dua = {
-  id: string;
-  keywords: string[];
-  category: string;
-  arabic: string;
-  transliteration: string;
-  translationUrdu: string;
-  translationEnglish: string;
-  reference: string;
-};
+import { Dua } from '../types';
 
 export const duas: Dua[] = [
   // ---------- Already existing (from earlier database) ----------
@@ -32,8 +23,8 @@ export const duas: Dua[] = [
     reference: 'Sahih al-Bukhari 6312',
   },
   {
-  id: 'before-eating',
-  keywords: ['eating', 'khana', 'khaty', 'food', 'meal', 'khany se pehle', 'khany sy phly', 'khana khany se pehle'],
+    id: 'before-eating',
+    keywords: ['eating', 'khana', 'khaty', 'food', 'meal', 'khany se pehle', 'khany sy phly', 'khana khany se pehle'],
     category: 'Before Eating · Khany Se Pehle Ki Dua',
     arabic: 'بِسْمِ اللّهِ',
     transliteration: 'Bismillah',

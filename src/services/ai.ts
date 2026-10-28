@@ -19,14 +19,10 @@ export async function generateAIResponse(userMessage: string): Promise<string> {
     const matchedDua = findMatchingDua(userMessage);
     const body: any = { message: userMessage };
 
+    // Only the id travels. The edge function looks the text up in its own
+    // table, so a logged-in user cannot inject a fake "verified" dua.
     if (matchedDua) {
-      body.verifiedDua = {
-        category: matchedDua.category,
-        arabic: matchedDua.arabic,
-        transliteration: matchedDua.transliteration,
-        translation: matchedDua.translationEnglish,
-        reference: matchedDua.reference,
-      };
+      body.duaId = matchedDua.id;
     }
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/chat-completion`, {
