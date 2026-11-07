@@ -32,12 +32,14 @@ export default function CategoriesScreen({ theme }: { theme: Theme }) {
   // Group duas by category
   const categorizedDuas = useMemo(() => {
     const groups: Record<string, Dua[]> = {};
-    duas.forEach((dua) => {
-      if (!groups[dua.category]) {
-        groups[dua.category] = [];
-      }
-      groups[dua.category].push(dua);
-    });
+    duas
+      .filter((dua) => dua.verified)
+      .forEach((dua) => {
+        if (!groups[dua.category]) {
+          groups[dua.category] = [];
+        }
+        groups[dua.category].push(dua);
+      });
     return groups;
   }, []);
 

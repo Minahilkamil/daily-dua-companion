@@ -80,4 +80,10 @@ describe('dua data integrity', () => {
       expect(dua.keywords.length).toBeGreaterThanOrEqual(3);
     }
   });
+
+  test('every verified dua has a non-empty reference', () => {
+    for (const dua of duas.filter((dua) => dua.verified)) {
+      expect(dua.reference.trim().length).toBeGreaterThan(0);
+    }
+  });
 });

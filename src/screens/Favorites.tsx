@@ -28,7 +28,9 @@ export default function FavoritesScreen({ theme }: { theme: Theme }) {
   const isFocused = useIsFocused();
 
   // Get favorite duas
-  const favoriteDuas = duas.filter((dua) => favoriteIds.has(dua.id));
+  const favoriteDuas = duas.filter(
+    (dua) => dua.verified && favoriteIds.has(dua.id),
+  );
 
   useEffect(() => {
     if (!isFocused) return;

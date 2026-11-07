@@ -33,6 +33,7 @@ export type Dua = {
   translationUrdu: string;
   translationEnglish: string;
   reference: string;
+  verified: boolean;
 };
 
 export type Favorite = {
