@@ -1,5 +1,7 @@
 # Daily Dua Companion ✨
 
+[![CI](https://github.com/Minahilkamil/daily-dua-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/Minahilkamil/daily-dua-companion/actions/workflows/ci.yml)
+
 > Your personal AI-powered guide for authentic, verified Islamic duas for every moment of daily life.
 
 <p align="center">

@@ -8,10 +8,13 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "seed:duas": "node scripts/generate-duas-seed.js",
-    "test": "jest --watchAll"
+    "test": "jest"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.test.ts"
+    ]
   },
   "dependencies": {
     "@expo-google-fonts/amiri": "^0.4.1",
