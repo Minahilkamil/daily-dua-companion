@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/Minahilkamil/daily-dua-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/Minahilkamil/daily-dua-companion/actions/workflows/ci.yml)
 
+**Live demo:** https://daily-dua-companion-murex.vercel.app
+
+> Demo note: sign up with any email and password to try it. Duas are served from a verified database, and the AI only adds reflection around them.
+
 > Your personal AI-powered guide for authentic, verified Islamic duas for every moment of daily life.
 
 <p align="center">
@@ -30,6 +34,7 @@
   - [Supabase Setup](#supabase-setup)
   - [Running the App](#running-the-app)
 - [Environment Variables](#-environment-variables)
+- [Known limitations](#known-limitations)
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -257,6 +262,15 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | ✅       | `anon` public key (safe to ship with the app)         |
 
 > ⚠️ **Security note**: The `GEMINI_API_KEY` is a _server-side secret_. Set it via `supabase secrets set`, **never** in `.env` or client code.
+
+---
+
+## Known limitations
+
+- Gemini free tier is occasionally rate-limited or overloaded; the app then falls back to showing the verified dua without AI commentary.
+- Email confirmation is off for the demo; enable it with custom SMTP before production.
+- The rate-limit check is not atomic under heavy concurrent bursts.
+- 18 more duas are in the data file but hidden until each is verified against sunnah.com.
 
 ---
 
