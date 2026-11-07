@@ -25,16 +25,31 @@ export async function generateAIResponse(userMessage: string): Promise<string> {
       body.duaId = matchedDua.id;
     }
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/chat-completion`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: SUPABASE_ANON_KEY,
-        // The logged-in user's token, not the public anon key.
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify(body),
-    });
+    // Abort the request if the edge function takes too long to respond.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+    let response: Response;
+    try {
+      response = await fetch(`${SUPABASE_URL}/functions/v1/chat-completion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON_KEY,
+          // The logged-in user's token, not the public anon key.
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new UserFacingError('The response is taking too long. Please try again.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (response.status === 401) {
       throw new UserFacingError('Your session has expired. Please log in again.');

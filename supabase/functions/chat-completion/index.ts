@@ -47,17 +47,25 @@ async function callGemini(
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent";
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: BASE_SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: userContent }] }],
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: BASE_SYSTEM_PROMPT }] },
+          contents: [{ role: "user", parts: [{ text: userContent }] }],
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (error) {
+      // A timeout or network error must not throw; return null instead.
+      console.error("Gemini request failed:", error);
+      return null;
+    }
 
     let data: any;
     try {
