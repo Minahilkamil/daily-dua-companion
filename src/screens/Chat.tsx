@@ -276,6 +276,17 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
     }
   }
 
+  function handleKeyPress(e: any) {
+    if (
+      Platform.OS === 'web' &&
+      e.nativeEvent.key === 'Enter' &&
+      !(e.nativeEvent as any).shiftKey
+    ) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
   async function saveMessage(message: Message) {
     const { error } = await supabase.from('messages').insert([
       {

@@ -12,22 +12,39 @@ const MAX_DUA_ID_CHARS = 100;
 const LIMIT_PER_MINUTE = 10;
 const LIMIT_PER_DAY = 200;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const ALLOWED_ORIGINS = [
+  "https://daily-dua-companion-murex.vercel.app",
+  "http://localhost:8081",
+];
 
-function json(body: unknown, status = 200) {
+type CorsHeaders = Record<string, string>;
+
+// Build the CORS headers per request. Only origins in the allow-list are
+// echoed back; anything else falls back to the first allowed origin.
+function buildCorsHeaders(req: Request): CorsHeaders {
+  const origin = req.headers.get("Origin");
+  const isAllowed = !!origin && ALLOWED_ORIGINS.includes(origin);
+  const headers: CorsHeaders = {
+    "Access-Control-Allow-Origin": isAllowed ? origin! : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+  if (isAllowed) {
+    headers["Vary"] = "Origin";
+  }
+  return headers;
+}
+
+function json(body: unknown, corsHeaders: CorsHeaders, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
 
-function reply(content: string, status = 200) {
-  return json({ choices: [{ message: { content } }] }, status);
+function reply(content: string, corsHeaders: CorsHeaders, status = 200) {
+  return json({ choices: [{ message: { content } }] }, corsHeaders, status);
 }
 
 function asText(value: unknown, max: number): string {
@@ -93,17 +110,18 @@ async function callGemini(
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
   if (req.method !== "POST") {
-    return json({ error: "Method not allowed" }, 405);
+    return json({ error: "Method not allowed" }, corsHeaders, 405);
   }
 
   // 1. Only logged-in users. The anon key alone is not enough.
   const authHeader = req.headers.get("Authorization") ?? "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  if (!token) return json({ error: "Unauthorized" }, 401);
+  if (!token) return json({ error: "Unauthorized" }, corsHeaders, 401);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -111,7 +129,7 @@ Deno.serve(async (req) => {
 
   const { data: userData, error: userError } = await admin.auth.getUser(token);
   if (userError || !userData?.user) {
-    return json({ error: "Unauthorized" }, 401);
+    return json({ error: "Unauthorized" }, corsHeaders, 401);
   }
   const userId = userData.user.id;
 
@@ -120,11 +138,11 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
   } catch {
-    return json({ error: "Invalid JSON" }, 400);
+    return json({ error: "Invalid JSON" }, corsHeaders, 400);
   }
 
   const message = asText(body?.message, MAX_MESSAGE_CHARS).trim();
-  if (!message) return json({ error: "Message is required" }, 400);
+  if (!message) return json({ error: "Message is required" }, corsHeaders, 400);
 
   // The client sends only an id. The dua text is read from our own table
   // below, so a logged-in user cannot inject a fake "verified" dua.
@@ -151,6 +169,7 @@ Deno.serve(async (req) => {
   if ((minute.count ?? 0) >= LIMIT_PER_MINUTE || (day.count ?? 0) >= LIMIT_PER_DAY) {
     return reply(
       "You are sending messages too quickly. Please wait a moment and try again.",
+      corsHeaders,
       429,
     );
   }
@@ -191,11 +210,13 @@ Please present this verified dua clearly (Arabic, transliteration, translation, 
     if (dua) {
       return reply(
         `Here is the verified dua:\n\nCategory: ${dua.category}\nArabic: ${dua.arabic}\nTransliteration: ${dua.transliteration}\nTranslation: ${dua.translation_en}\nReference: ${dua.reference}`,
+        corsHeaders,
       );
     }
     return reply(
       "I'm having trouble responding right now. Please try again in a moment.",
+      corsHeaders,
     );
   }
-  return reply(replyText);
+  return reply(replyText, corsHeaders);
 });
