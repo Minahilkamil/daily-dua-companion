@@ -27,7 +27,7 @@ export async function generateAIResponse(userMessage: string): Promise<string> {
 
     // Abort the request if the edge function takes too long to respond.
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     let response: Response;
     try {

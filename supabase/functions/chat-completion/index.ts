@@ -36,7 +36,7 @@ function asText(value: unknown, max: number): string {
 
 async function callGemini(
   userContent: string,
-  retries = 2,
+  retries = 1,
 ): Promise<string | null> {
   const apiKey = Deno.env.get("GEMINI_API_KEY");
   if (!apiKey) {
@@ -80,7 +80,7 @@ async function callGemini(
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (text) return text;
 
-    if (response.status === 429 && attempt < retries) {
+    if ((response.status === 429 || response.status === 503) && attempt < retries) {
       await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       continue;
     }
@@ -158,13 +158,21 @@ Deno.serve(async (req) => {
 
   // 4. Build the prompt.
   let userContent = `User's question: ${message}`;
+  let dua: {
+    category: string;
+    arabic: string;
+    transliteration: string;
+    translation_en: string;
+    reference: string;
+  } | null = null;
   if (duaId) {
-    const { data: dua } = await admin
+    const { data } = await admin
       .from("duas")
       .select("category, arabic, transliteration, translation_en, reference")
       .eq("id", duaId)
       .eq("verified", true)
       .maybeSingle();
+    dua = data;
 
     if (dua) {
       userContent = `User's question: ${message}
@@ -180,6 +188,11 @@ Please present this verified dua clearly (Arabic, transliteration, translation, 
 
   const replyText = await callGemini(userContent);
   if (!replyText) {
+    if (dua) {
+      return reply(
+        `Here is the verified dua:\n\nCategory: ${dua.category}\nArabic: ${dua.arabic}\nTransliteration: ${dua.transliteration}\nTranslation: ${dua.translation_en}\nReference: ${dua.reference}`,
+      );
+    }
     return reply(
       "I'm having trouble responding right now. Please try again in a moment.",
     );
