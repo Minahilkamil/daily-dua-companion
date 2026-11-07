@@ -429,6 +429,7 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
             style={[styles.input, { backgroundColor: colors.background, color: colors.darkText, borderColor: colors.border }]}
             value={text}
             onChangeText={setText}
+            onKeyPress={handleKeyPress}
             placeholder="Type your question..."
             placeholderTextColor={colors.mutedText}
             multiline
