@@ -21,14 +21,21 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Session } from "@supabase/supabase-js";
 import LoginScreen from "./src/screens/Login";
 import SignUpScreen from "./src/screens/SignUp";
+import ResetPasswordScreen from "./src/screens/ResetPassword";
 import ChatScreen from "./src/screens/Chat";
 import CategoriesScreen from "./src/screens/Categories";
 import FavoritesScreen from "./src/screens/Favorites";
-import { supabase, getTheme, setTheme } from "./src/services/supabase";
+import { supabase, getTheme, setTheme, openedFromRecoveryLink } from "./src/services/supabase";
 import { RootStackParamList, MainTabParamList, Theme } from "./src/types";
 import { getColors } from "./src/constants/colors";
 
 SplashScreen.preventAutoHideAsync();
+
+if (Platform.OS === "web" && typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = "input::-ms-reveal, input::-ms-clear { display: none; }";
+  document.head.appendChild(style);
+}
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const MainStack = createNativeStackNavigator<MainTabParamList>();
@@ -335,6 +342,7 @@ function MainNavigator({
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [recovering, setRecovering] = useState(openedFromRecoveryLink);
   const [theme, setThemeState] = useState<Theme>("light");
   const colors = getColors(theme);
 
@@ -361,7 +369,10 @@ export default function App() {
       }
       setLoading(false);
 
-      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          setRecovering(true);
+        }
         setSession(session);
       });
       subscription = data.subscription;
@@ -406,6 +417,26 @@ export default function App() {
           style={[styles.splashUnderline, { backgroundColor: colors.gold }]}
         />
       </View>
+    );
+  }
+
+  if (recovering) {
+    return (
+      <>
+        <StatusBar
+          style={theme === "dark" ? "light" : "dark"}
+          backgroundColor={colors.cardBackground}
+        />
+        <ResetPasswordScreen
+          theme={theme}
+          onDone={() => {
+            if (Platform.OS === "web") {
+              window.location.hash = "";
+            }
+            setRecovering(false);
+          }}
+        />
+      </>
     );
   }
 

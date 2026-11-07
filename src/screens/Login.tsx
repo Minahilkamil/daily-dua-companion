@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, Theme } from '../types';
@@ -47,6 +48,30 @@ export default function LoginScreen({ navigation, theme, toggleTheme }: Props) {
       notify('Login failed', error.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      notify(
+        'Enter your email first',
+        'Type your email above, then tap "Forgot password?" again.'
+      );
+      return;
+    }
+
+    const redirectTo = Platform.OS === 'web' ? window.location.origin : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo,
+    });
+
+    if (error) {
+      notify(error.message);
+    } else {
+      notify(
+        'Check your email',
+        'If an account exists for this email, we sent a password reset link.'
+      );
     }
   }
 
@@ -115,7 +140,9 @@ export default function LoginScreen({ navigation, theme, toggleTheme }: Props) {
       paddingVertical: 16,
       fontSize: 16,
       color: colors.darkText,
-    },
+      // Hide the browser's default focus ring; only the caret shows.
+      outlineStyle: 'none',
+    } as any,
     button: {
       backgroundColor: colors.primaryGreen,
       paddingVertical: 17,
@@ -143,6 +170,15 @@ export default function LoginScreen({ navigation, theme, toggleTheme }: Props) {
     },
     linkTextBold: {
       color: colors.gold,
+      fontWeight: '600',
+    },
+    forgotPasswordButton: {
+      alignSelf: 'flex-end',
+      marginBottom: 20,
+    },
+    forgotPasswordText: {
+      color: colors.gold,
+      fontSize: 14,
       fontWeight: '600',
     },
   });
@@ -197,6 +233,13 @@ export default function LoginScreen({ navigation, theme, toggleTheme }: Props) {
             />
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={handleForgotPassword}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}

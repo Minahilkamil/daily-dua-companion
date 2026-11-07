@@ -125,7 +125,9 @@ export default function SignUpScreen({ navigation, theme, toggleTheme }: Props) 
       paddingVertical: 16,
       fontSize: 16,
       color: colors.darkText,
-    },
+      // Hide the browser's default focus ring; only the caret shows.
+      outlineStyle: 'none',
+    } as any,
     button: {
       backgroundColor: colors.primaryGreen,
       paddingVertical: 17,
