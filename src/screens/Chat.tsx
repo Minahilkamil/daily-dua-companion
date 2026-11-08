@@ -34,6 +34,8 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
   const flatListRef = useRef<FlatList>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const isInitialLoad = useRef(true);
+  const isNearBottomRef = useRef(true);
+  const justSentRef = useRef(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const colors = getColors(theme);
   const insets = useSafeAreaInsets();
@@ -179,6 +181,17 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
     }
   }, [isFocused, userId]);
 
+  // Auto-scroll to the newest message, but never yank the view while the user
+  // is reading older messages: scroll only when the user just sent a message,
+  // or when new content arrived while the view was already pinned near the bottom.
+  useEffect(() => {
+    if (messages.length === 0) return;
+    if (justSentRef.current || isNearBottomRef.current) {
+      justSentRef.current = false;
+      flatListRef.current?.scrollToEnd({ animated: !isInitialLoad.current });
+    }
+  }, [messages, loading]);
+
   async function checkUser() {
     const {
       data: { user },
@@ -251,6 +264,7 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
       created_at: new Date().toISOString(),
     };
 
+    justSentRef.current = true;
     setMessages((prev) => [...prev, userMessage]);
     setText('');
     setLoading(true);
@@ -397,9 +411,12 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             contentContainerStyle={styles.messagesList}
-            onContentSizeChange={() => {
-              flatListRef.current?.scrollToEnd({ animated: !isInitialLoad.current });
+            onScroll={(e) => {
+              const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+              isNearBottomRef.current =
+                contentSize.height - (contentOffset.y + layoutMeasurement.height) < 80;
             }}
+            scrollEventThrottle={100}
             keyboardShouldPersistTaps="handled"
           />
         )}
