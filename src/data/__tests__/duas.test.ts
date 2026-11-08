@@ -18,6 +18,12 @@ describe('findMatchingDua', () => {
     ['toilet se bahir ki dua', 'leaving-toilet'],
     ['toilet mein dakhil hone ki dua', 'entering-toilet'],
     ['kapre pehnne ki dua', 'wearing-clothes'],
+    ['gussa ki dua', 'anger'],
+    ['cheenk ki dua', 'sneezing'],
+    ['qabristan ki dua', 'entering-graveyard'],
+    ['fikr ki dua', 'anxiety-lazy'],
+    ['nazar se hifazat', 'protection-evil-eye'],
+    ['ilm ki dua', 'increase-knowledge'],
   ])('maps "%s" to %s', (message, expectedId) => {
     expect(findMatchingDua(message)?.id ?? null).toBe(expectedId);
   });
