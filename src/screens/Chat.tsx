@@ -181,14 +181,28 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
     }
   }, [isFocused, userId]);
 
-  // Auto-scroll to the newest message, but never yank the view while the user
-  // is reading older messages: scroll only when the user just sent a message,
-  // or when new content arrived while the view was already pinned near the bottom.
+  // Auto-scroll when the assistant reply arrives: if the user just sent a
+  // message this turn or was already pinned near the bottom, wait for layout
+  // (rAF + a short delay) and then scroll so the reply is not cut off.
   useEffect(() => {
     if (messages.length === 0) return;
+    const last = messages[messages.length - 1];
+    if (last.role === 'user' && justSentRef.current) {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: !isInitialLoad.current });
+        }, 50);
+      });
+      return;
+    }
+    if (last.role !== 'assistant') return;
     if (justSentRef.current || isNearBottomRef.current) {
       justSentRef.current = false;
-      flatListRef.current?.scrollToEnd({ animated: !isInitialLoad.current });
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: !isInitialLoad.current });
+        }, 50);
+      });
     }
   }, [messages, loading]);
 
@@ -414,7 +428,7 @@ export default function ChatScreen({ theme, toggleTheme }: Props) {
             onScroll={(e) => {
               const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
               isNearBottomRef.current =
-                contentSize.height - (contentOffset.y + layoutMeasurement.height) < 80;
+                contentSize.height - (contentOffset.y + layoutMeasurement.height) < 200;
             }}
             scrollEventThrottle={100}
             keyboardShouldPersistTaps="handled"
