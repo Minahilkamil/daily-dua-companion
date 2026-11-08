@@ -198,7 +198,7 @@ export const duas: Dua[] = [
     translationUrdu: 'Aey Allah, teri hi tamam tareefein hain, tu ne hi mujhe ye pehnaya. Main tujh se iski khair aur jis maqsad ke liye ye banaya gaya uski khair maangta hoon, aur iske shar aur us maqsad ke shar se teri panah chahta hoon.',
     translationEnglish: 'O Allah, praise be to Thee! as Thou hast clothed me with it, I ask Thee for its good and the good of that for which it was made, and I seek refuge in Thee from its evil and the evil of that for which it was made.',
     reference: 'Sunan Abi Dawud 4020',
-    verified: false,
+    verified: true,
   },
   {
     id: 'sneezing',
@@ -220,7 +220,7 @@ export const duas: Dua[] = [
     translationUrdu: 'Pyaas khatam ho gayi, ragein tar ho gayin, aur agar Allah ne chaha to ajr saabit ho gaya.',
     translationEnglish: 'Thirst has gone, the arteries are moist, and the reward is sure, if Allah wills.',
     reference: 'Sunan Abi Dawud 2357',
-    verified: false,
+    verified: true,
   },
   {
     id: 'paying-debt',
@@ -264,7 +264,7 @@ export const duas: Dua[] = [
     translationUrdu: 'Aey Allah, is (doodh) mein humare liye barkat de aur humein is se zyada ata farma.',
     translationEnglish: 'O Allah! bless us in it and give us more of it.',
     reference: 'Sunan Abi Dawud 3730',
-    verified: false,
+    verified: true,
   },
   {
     id: 'morning-protection',
@@ -278,15 +278,15 @@ export const duas: Dua[] = [
     verified: false,
   },
   {
-    id: 'evening-protection',
-    keywords: ['evening dua', 'shaam ki dua', 'sham ki dua', 'maghrib ke baad', 'shaam', 'evening'],
-    category: 'Evening Supplication · Shaam Ki Dua',
+    id: 'staying-at-place',
+    keywords: ['staying at a place', 'manzil', 'jagah utarna', 'safar mein thehrna', 'rukna', 'thehrna'],
+    category: 'Staying at a Place · Kisi Jagah Thehrne Ki Dua',
     arabic: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ',
     transliteration: "A'udhu bi kalimatil-lahit-tammati min sharri ma khalaq",
-    translationUrdu: 'Main Allah ke mukammal kalimaat ki panah maangta hoon har us cheez ke shar se jo usne paida ki.',
-    translationEnglish: 'I seek refuge in the Perfect Word of Allah from the evil of what He has created.',
+    translationUrdu: 'Jab koi kisi jagah utre to kahe: main Allah ke mukammal kalimaat ki panah maangta hoon us cheez ke shar se jo usne paida ki. Phir wahan se kooch karne tak use koi cheez nuksan nahi degi.',
+    translationEnglish: 'When any one of you stops at a place, he should say: I seek refuge in the Perfect Word of Allah from the evil of that He created. Nothing will harm him until he moves on from that place.',
     reference: 'Sahih Muslim 2709a',
-    verified: false,
+    verified: true,
   },
   {
     id: 'anxiety-lazy',
@@ -385,7 +385,7 @@ export const duas: Dua[] = [
     translationUrdu: 'Tumhare haan rozedar iftar karein, aur tumhara khana nek log khaein, aur farishte tumhare liye dua karein.',
     translationEnglish: 'May the fasting (men) break their fast with you, and the pious eat your food, and the angels pray for blessing on you.',
     reference: 'Sunan Abi Dawud 3854',
-    verified: false,
+    verified: true,
   },
 ];
 
